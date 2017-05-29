@@ -58,8 +58,7 @@ header. Individual blocks can be selectively evaluated using
 (defun endless/export-audio-link (path desc format)
   "Export org audio links to hmtl."
   (cl-case format
-    (latex (format "(HOW DO I EXPORT AUDIO TO LATEX? \"%s\")" path))))
-
+    (latex "")))
 (org-add-link-type "audio" #'ignore #'endless/export-audio-link)
 
 

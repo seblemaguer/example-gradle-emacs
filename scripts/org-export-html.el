@@ -26,14 +26,24 @@ header. Individual blocks can be selectively evaluated using
 
 (defun getopt (name) (gethash name args))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Package
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (cli-package-setup (getopt "package-dir") '(ess htmlize org org-plus-contrib org-ref))
 (require 'ox)
 (require 'ox-html)
+(require 'org-ref)
+(require 'ox-extra)
+(ox-extras-activate '(ignore-headlines))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Global configuration
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; provides colored syntax highlighting
-
 ;; (use-package color-theme-github :ensure t)
 
+;; Output verbose level
 (setq debug-on-error (getopt "verbose"))
 ;; (setq debug-on-signal (getopt "debug"))
 
@@ -45,6 +55,10 @@ header. Individual blocks can be selectively evaluated using
           '(lambda ()
              (setq ess-ask-for-ess-directory nil)
              ))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; HTML configuration
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; css configuration
 (defvar bootstrap-url
@@ -77,7 +91,38 @@ header. Individual blocks can be selectively evaluated using
             (format
              "<link rel=\"stylesheet\" type=\"text/css\" href=\"%s\" />" css-url))))
 
-;; org-mode and export configuration
+
+;; Redefined to avoid problem with sizing
+(defun org-html--svg-image (source attributes info)
+  "Return \"object\" embedding svg file SOURCE with given ATTRIBUTES.
+INFO is a plist used as a communication channel.
+
+The special attribute \"fallback\" can be used to specify a
+fallback image file to use if the object embedding is not
+supported.  CSS class \"org-svg\" is assigned as the class of the
+object unless a different class is specified with an attribute."
+  (org-html-close-tag
+     "img"
+     (org-html--make-attribute-string
+      (org-combine-plists
+       (list :src source
+	     :alt (if (string-match-p "^ltxpng/" source)
+		      (org-html-encode-plain-text
+		       (org-find-text-property-in-string 'org-latex-src source))
+		    (file-name-nondirectory source)))
+       attributes))
+     info))
+
+
+(defun endless/export-audio-link (path desc format)
+  "Export org audio links to hmtl."
+  (cl-case format
+    (html (format "<audio src=\"%s\" controls>%s</audio>" path (or desc "")))))
+(org-add-link-type "audio" #'ignore #'endless/export-audio-link)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; org-mode and export configuration
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; store the execution path for the current environment and provide it
 ;; to sh code blocks - otherwise, some system directories are
@@ -134,15 +179,6 @@ header. Individual blocks can be selectively evaluated using
                       (dot . t)
                       )))
              ))
-
-(defun endless/export-audio-link (path desc format)
-  "Export org audio links to hmtl."
-  (cl-case format
-    (html (format "<audio src=\"%s\" controls>%s</audio>" path (or desc "")))
-    (latex (format "(HOW DO I EXPORT AUDIO TO LATEX? \"%s\")" path))))
-
-(org-add-link-type "audio" #'ignore #'endless/export-audio-link)
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;; compile and export ;;;;;;;;;;;;;;;

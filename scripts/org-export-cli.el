@@ -176,7 +176,6 @@ already installed."
   (cli-install-packages package-list))
 
 ;; other utilities
-
 (defun cli-replace-all (from-str to-str)
   "Replace all occurrences of from-str with to-str in current buffer"
   (beginning-of-buffer)
