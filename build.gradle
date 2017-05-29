@@ -56,7 +56,7 @@ task mathjaxHtml(type: Copy) {
 
 
 /*****************************************************************************************
- ** MathJax
+ ** Assets
  *****************************************************************************************/
 task processAssetsReveal(type: Copy) {
     from fileTree('src').include('assets/**')
@@ -73,6 +73,9 @@ task processAssetsLatex(type: Copy) {
     into "$buildDir/${rootProject.name}/latex"
 }
 
+/*****************************************************************************************
+ ** Rendering
+ *****************************************************************************************/
 task org2html(type: Exec, dependsOn: ["mathjaxHtml", "processAssetsHtml"]) {
     def orgFile = file("src/slides.org")
     def htmlFile = file("$buildDir/${rootProject.name}/html/index.html")
@@ -95,11 +98,11 @@ task org2reveal(type: Exec, dependsOn: ["revealJS", "copyThemes", "mathjaxReveal
 
 task org2latex(type: Exec, dependsOn: "processAssetsLatex") {
     def orgFile = file("src/slides.org")
-    def htmlFile = file("$buildDir/${rootProject.name}/index.html")
+    def pdfFile = file("$buildDir/${rootProject.name}/latex/index.pdf")
     inputs.files orgFile, processAssetsLatex
-    outputs.files htmlFile
+    outputs.files pdfFile
 
-    commandLine "emacs-bin", "-q", "--no-site-file", "--evaluate", "--script", "scripts/org-export-latex.el", "--infile", orgFile, "--outfile", htmlFile
+    commandLine "emacs-bin", "-q", "--no-site-file", "--evaluate", "--script", "scripts/org-export-beamer.el", "--infile", orgFile, "--outfile", pdfFile
 }
 
 build.dependsOn "org2html", "org2reveal", "org2latex"
