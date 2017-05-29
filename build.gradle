@@ -1,0 +1,111 @@
+plugins {
+    id 'base'
+    id 'de.undercouch.download' version '3.1.1'
+}
+
+import de.undercouch.gradle.tasks.download.Download
+
+/*****************************************************************************************
+ ** Reveal
+ *****************************************************************************************/
+task downloadRevealJS(type: Download) {
+    src "https://github.com/hakimel/reveal.js/archive/3.0.0.zip"
+    dest 'reveal.js.zip'
+    overwrite false
+}
+
+task revealJS(type: Copy) {
+    dependsOn downloadRevealJS
+    from zipTree('reveal.js.zip')
+    into "$buildDir/${rootProject.name}/reveal/reveal.js"
+    eachFile { it.path = it.path - 'reveal.js-3.0.0/' }
+    includeEmptyDirs = false
+}
+
+task copyThemes(type: Copy) {
+    dependsOn revealJS
+    from "src/themes"
+    into "$buildDir/${rootProject.name}/reveal/reveal.js/css/theme"
+}
+
+/*****************************************************************************************
+ ** MathJax
+ *****************************************************************************************/
+task downloadMathJax(type: Download) {
+    src "https://github.com/mathjax/MathJax/archive/2.7.0.zip"
+    dest "mathjax.zip"
+    overwrite false
+}
+
+task mathjaxReveal(type: Copy) {
+    dependsOn downloadMathJax
+    from zipTree('mathjax.zip')
+    into "$buildDir/${rootProject.name}/reveal/mathjax"
+    eachFile { it.path = it.path - 'MathJax-2.7.0/' }
+    includeEmptyDirs = false
+}
+
+task mathjaxHtml(type: Copy) {
+    dependsOn downloadMathJax
+    from zipTree('mathjax.zip')
+    into "$buildDir/${rootProject.name}/html/mathjax"
+    eachFile { it.path = it.path - 'MathJax-2.7.0/' }
+    includeEmptyDirs = false
+}
+
+
+
+/*****************************************************************************************
+ ** MathJax
+ *****************************************************************************************/
+task processAssetsReveal(type: Copy) {
+    from fileTree('src').include('assets/**')
+    into "$buildDir/${rootProject.name}/reveal"
+}
+
+task processAssetsHtml(type: Copy) {
+    from fileTree('src').include('assets/**')
+    into "$buildDir/${rootProject.name}/html"
+}
+
+task processAssetsLatex(type: Copy) {
+    from fileTree('src').include('assets/**')
+    into "$buildDir/${rootProject.name}/latex"
+}
+
+task org2html(type: Exec, dependsOn: ["mathjaxHtml", "processAssetsHtml"]) {
+    def orgFile = file("src/slides.org")
+    def htmlFile = file("$buildDir/${rootProject.name}/html/index.html")
+    inputs.files orgFile, processAssetsHtml
+    outputs.files htmlFile
+
+    commandLine "emacs-bin", "-q", "--no-site-file", "--evaluate", "--script", "scripts/org-export-html.el", "--infile", orgFile, "--outfile", htmlFile
+}
+
+
+task org2reveal(type: Exec, dependsOn: ["revealJS", "copyThemes", "mathjaxReveal", "processAssetsReveal"]) {
+    def orgFile = file("src/slides.org")
+    def htmlFile = file("$buildDir/${rootProject.name}/reveal/index.html")
+    inputs.files orgFile, processAssetsReveal, revealJS, copyThemes
+    outputs.files htmlFile
+
+    commandLine "emacs-bin", "-q", "--no-site-file", "--evaluate", "--script", "scripts/org-export-reveal.el", "--infile", orgFile, "--outfile", htmlFile
+}
+
+
+task org2latex(type: Exec, dependsOn: "processAssetsLatex") {
+    def orgFile = file("src/slides.org")
+    def htmlFile = file("$buildDir/${rootProject.name}/index.html")
+    inputs.files orgFile, processAssetsLatex
+    outputs.files htmlFile
+
+    commandLine "emacs-bin", "-q", "--no-site-file", "--evaluate", "--script", "scripts/org-export-latex.el", "--infile", orgFile, "--outfile", htmlFile
+}
+
+build.dependsOn "org2html", "org2reveal", "org2latex"
+
+task run(type: Exec) {
+    dependsOn build
+    commandLine 'python', '-m', 'SimpleHTTPServer'
+    workingDir "$buildDir/${rootProject.name}"
+}
