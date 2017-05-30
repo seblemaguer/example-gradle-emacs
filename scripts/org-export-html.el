@@ -51,10 +51,8 @@ header. Individual blocks can be selectively evaluated using
 (setq make-backup-files nil)
 
 ;; ess configuration
-(add-hook 'ess-mode-hook
-          '(lambda ()
-             (setq ess-ask-for-ess-directory nil)
-             ))
+(setq ess-ask-for-ess-directory nil)
+(setq ess-history-file nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; HTML configuration
@@ -167,18 +165,20 @@ object unless a different class is specified with an attribute."
              (setq org-babel-default-header-args:sh
                    (list `(:prologue . ,sh-src-prologue)))
 
-             (org-babel-do-load-languages
-              (quote org-babel-load-languages)
-              (quote ((R . t)
-                      (latex . t)
-                      (python . t)
-                      (sh . t)
-                      (sql . t)
-                      (sqlite . t)
-                      (emacs-lisp . t)
-                      (dot . t)
-                      )))
-             ))
+
+	     (org-babel-do-load-languages 'org-babel-load-languages
+					  '((emacs-lisp . t)
+					    (dot . t)
+					    (ditaa . t)
+					    (R . t)
+					    (ruby . t)
+					    (gnuplot . t)
+					    (clojure . t)
+					    (sh . t)
+					    (ledger . t)
+					    (org . t)
+					    (latex . t)
+					    (python . t)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;; compile and export ;;;;;;;;;;;;;;;

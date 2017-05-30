@@ -46,11 +46,8 @@ header. Individual blocks can be selectively evaluated using
 (setq make-backup-files nil)
 
 ;; ess configuration
-(add-hook 'ess-mode-hook
-          '(lambda ()
-             (setq ess-ask-for-ess-directory nil)
-             ))
-
+(setq ess-ask-for-ess-directory nil)
+(setq ess-history-file nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Latex configuration
@@ -109,18 +106,20 @@ header. Individual blocks can be selectively evaluated using
              (setq org-babel-default-header-args:sh
                    (list `(:prologue . ,sh-src-prologue)))
 
-             (org-babel-do-load-languages
-              (quote org-babel-load-languages)
-              (quote ((R . t)
-                      (latex . t)
-                      (python . t)
-                      (sh . t)
-                      (sql . t)
-                      (sqlite . t)
-                      (emacs-lisp . t)
-                      (dot . t)
-                      )))
-             ))
+
+	     (org-babel-do-load-languages 'org-babel-load-languages
+					  '((emacs-lisp . t)
+					    (dot . t)
+					    (ditaa . t)
+					    (R . t)
+					    (ruby . t)
+					    (gnuplot . t)
+					    (clojure . t)
+					    (sh . t)
+					    (ledger . t)
+					    (org . t)
+					    (latex . t)
+					    (python . t)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -139,7 +138,7 @@ header. Individual blocks can be selectively evaluated using
 ;; infile as the base name defines the working directory as the same
 ;; as the input file
 (defvar infile-temp (replace-regexp-in-string "\.pdf$" ".org" outfile))
-(copy-file infile infile-temp)
+(copy-file infile infile-temp t)
 (find-file infile-temp)
 (org-mode)
 (message (format "org-mode version %s" org-version))
