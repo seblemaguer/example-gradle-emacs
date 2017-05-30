@@ -76,18 +76,20 @@ task processAssetsLatex(type: Copy) {
 /*****************************************************************************************
  ** Rendering
  *****************************************************************************************/
+
+// Global org file
+def orgFile = file("src/paper.org")
+
 task org2html(type: Exec, dependsOn: ["mathjaxHtml", "processAssetsHtml"]) {
-    def orgFile = file("src/slides.org")
     def htmlFile = file("$buildDir/${rootProject.name}/html/index.html")
     inputs.files orgFile, processAssetsHtml
     outputs.files htmlFile
 
-    commandLine "emacs-bin", "-q", "--no-site-file", "--evaluate", "--script", "scripts/org-export-html.el", "--infile", orgFile, "--outfile", htmlFile
+    commandLine "emacs-bin", "-q", "--no-site-file", "--evaluate", "--script", "scripts/org-export-html.el", "--infile", orgFile, "--outfile", htmlFile, "--verbose"
 }
 
 
 task org2reveal(type: Exec, dependsOn: ["revealJS", "copyThemes", "mathjaxReveal", "processAssetsReveal"]) {
-    def orgFile = file("src/slides.org")
     def htmlFile = file("$buildDir/${rootProject.name}/reveal/index.html")
     inputs.files orgFile, processAssetsReveal, revealJS, copyThemes
     outputs.files htmlFile
@@ -97,12 +99,11 @@ task org2reveal(type: Exec, dependsOn: ["revealJS", "copyThemes", "mathjaxReveal
 
 
 task org2latex(type: Exec, dependsOn: "processAssetsLatex") {
-    def orgFile = file("src/slides.org")
     def pdfFile = file("$buildDir/${rootProject.name}/latex/index.pdf")
     inputs.files orgFile, processAssetsLatex
     outputs.files pdfFile
 
-    commandLine "emacs-bin", "-q", "--no-site-file", "--evaluate", "--script", "scripts/org-export-beamer.el", "--infile", orgFile, "--outfile", pdfFile
+    commandLine "emacs-bin", "-q", "--no-site-file", "--evaluate", "--script", "scripts/org-export-latex.el", "--infile", orgFile, "--outfile", pdfFile, "--verbose"
 }
 
 build.dependsOn "org2html", "org2reveal", "org2latex"

@@ -1,0 +1,30 @@
+#+TITLE: this is a paper example
+#+AUTHOR: Sébastien Le Maguer
+#+MAIL: slemaguer@coli.uni-saarland.de
+#+DATE: 31th May 2017
+
+* Introduction
+Example of introduction
+* Section 1
+Example of section
+* Test section
+** Data
+Presenting the data and showing them.
+#+begin_src R :session tuto4_R :cache yes :exports both :tangle yes
+  library(ggplot2)
+  data <- read.csv(file="assets/values.csv", sep=",", header=TRUE)
+  summary(data)
+#+end_src
+
+** Plotting data
+We plot the histogram
+#+begin_src R :file assets/q1_hist.png :session tuto4_R :cache yes :exports results :results output graphics :tangle yes
+  nb_bins <- 5
+  ggplot(data, aes(x=LangScore)) +
+      geom_histogram(origin = min(data$LangScore),
+                     binwidth = (max(data$LangScore)-min(data$LangScore))/nb_bins) +
+      facet_grid(~Condition)
+#+end_src
+
+* Conclusion
+A conclusion
