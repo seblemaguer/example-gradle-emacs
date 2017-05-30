@@ -58,17 +58,24 @@ task mathjaxHtml(type: Copy) {
 /*****************************************************************************************
  ** Assets
  *****************************************************************************************/
-task processAssetsReveal(type: Copy) {
+task downloadAssets(type: Download) {
+    src "http://www.coli.uni-saarland.de/~slemaguer/attachments/example_gradle_emacs/values.csv"
+    dest "src/assets/values.csv"
+    overwrite false
+}
+
+
+task processAssetsReveal(type: Copy, dependsOn: "downloadAssets") {
     from fileTree('src').include('assets/**')
     into "$buildDir/${rootProject.name}/reveal"
 }
 
-task processAssetsHtml(type: Copy) {
+task processAssetsHtml(type: Copy, dependsOn: "downloadAssets") {
     from fileTree('src').include('assets/**')
     into "$buildDir/${rootProject.name}/html"
 }
 
-task processAssetsLatex(type: Copy) {
+task processAssetsLatex(type: Copy, dependsOn: "downloadAssets") {
     from fileTree('src').include('assets/**')
     into "$buildDir/${rootProject.name}/latex"
 }
